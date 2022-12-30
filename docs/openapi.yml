@@ -1,0 +1,178 @@
+openapi: 3.0.3
+
+info:
+  title: ⚡️ Zapple storage
+  description: Zapp'em all!
+  version: 1.0.0
+
+externalDocs:
+  url: http://github.com/milankyncl/zapple-features
+  description: Find out more in Docs
+
+tags:
+  - name: Features
+    description: Admin feature operations
+  - name: Feature storage
+    description: Feature storage operations
+
+paths:
+  /api/admin/features:
+    get:
+      tags:
+        - Features
+      summary: Get storage
+      operationId: getFeatures
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FeatureDto'
+      security:
+        - api_key: []
+    post:
+      tags:
+        - Features
+      summary: Create new feature
+      operationId: createFeature
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateFeatureDto'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeatureDto'
+      security:
+        - api_key: []
+  /api/admin/features/{id}:
+    patch:
+      tags:
+        - Features
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      summary: Update feature
+      operationId: udpateFeature
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateFeatureDto'
+      responses:
+        '204':
+          description: No Content
+      security:
+        - api_key: []
+    delete:
+      tags:
+        - Features
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      summary: Delete feature
+      operationId: deleteFeature
+      responses:
+        '204':
+          description: No Content
+      security:
+        - api_key: []
+  /api/admin/features/{id}/toggle:
+    put:
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      tags:
+        - Features
+      summary: Toggle the feature
+      operationId: toggleFeature
+      responses:
+        '204':
+          description: No Content
+      security:
+        - api_key: []
+  /api/feature-toggles:
+    get:
+      tags:
+        - Feature storage
+      summary: Get feature storage
+      operationId: getFeatureToggles
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FeatureToggleDto'
+components:
+  schemas:
+    FeatureDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        key:
+          type: string
+          example: feature_key
+        description:
+          type: string
+          example: Feature description
+        enabled:
+          type: boolean
+          example: false
+      required:
+        - id
+        - key
+        - description
+        - enabled
+    CreateFeatureDto:
+      type: object
+      properties:
+        name:
+          type: string
+          example: Feature
+      required:
+        - name
+    UpdateFeatureDto:
+      type: object
+      properties:
+        name:
+          type: string
+          example: Feature
+    FeatureToggleDto:
+      type: object
+      properties:
+        key:
+          type: string
+          example: feature_key
+        enabled:
+          type: boolean
+          example: false
+      required:
+        - key
+        - enabled
+  securitySchemes:
+    api_key:
+      type: apiKey
+      name: Bearer
+      in: header

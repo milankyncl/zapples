@@ -1,0 +1,8 @@
+CREATE TABLE `features` (
+    id INTEGER,
+    key VARCHAR NOT NULL UNIQUE,
+    description TEXT DEFAULT NULL,
+    enabled TINYINT DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY("id" AUTOINCREMENT)
+)
