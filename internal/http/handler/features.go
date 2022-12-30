@@ -93,3 +93,29 @@ func UpdateFeatureHandle(adapter storage.Adapter) http.HandlerFunc {
 		w.WriteHeader(http.StatusNoContent)
 	}
 }
+
+type ToggleFeatureRequestDto struct {
+	Enabled bool `json:"enabled"`
+}
+
+func ToggleFeatureHandle(adapter storage.Adapter) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		id, err := strconv.Atoi(chi.URLParam(r, "id"))
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		var dto ToggleFeatureRequestDto
+		err = json.NewDecoder(r.Body).Decode(&dto)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		err = adapter.Toggle(id, dto.Enabled)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.WriteHeader(http.StatusNoContent)
+	}
+}

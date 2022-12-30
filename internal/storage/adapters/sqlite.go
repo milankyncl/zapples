@@ -98,7 +98,7 @@ func (s *SQLite) Toggle(id int, enabled bool) error {
 	if err != nil {
 		return err
 	}
-	_, err = stmt.Exec(id, enabled)
+	_, err = stmt.Exec(enabled, id)
 
 	return err
 }
