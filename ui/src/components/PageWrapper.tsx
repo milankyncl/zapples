@@ -12,6 +12,7 @@ export const PageWrapper: FC<Props> = ({ children }) => {
                     <div className="space-y-6 py-8 text-base leading-7 text-gray-600">
                         {children}
                     </div>
+                    {/*
                     <div className="pt-8 text-base font-semibold leading-7">
                         <p className="text-gray-900">Want to dig deeper into Tailwind?</p>
                         <p>
@@ -19,6 +20,7 @@ export const PageWrapper: FC<Props> = ({ children }) => {
                                 docs &rarr;</a>
                         </p>
                     </div>
+                    */}
                 </div>
             </div>
         </div>

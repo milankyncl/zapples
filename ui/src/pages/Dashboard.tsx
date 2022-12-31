@@ -1,45 +1,64 @@
-import React, { FC } from 'react';
+import React, {FC, useState} from 'react';
 import useSWR from 'swr'
-import { client } from '../api/client'
+import {client} from '../api/client'
+import {Button, ButtonSize} from "../components/atoms/Button";
+import {PlusIcon} from "@heroicons/react/24/solid";
+import {useNavigate} from "react-router-dom";
+import {PageHeading} from "../components/atoms/PageHeading";
+import {FeatureItem} from "./features/FeatureItem";
+import {Feature} from "../api/models/feature";
 
 const fetcher = (url: string) => client.get(url).then(res => res.data)
 
-interface FeatureToggle {
-    id: number;
-    key: string;
-    enabled: boolean;
+interface FeatureTogglesResponse {
+    data: Feature[];
 }
 
-interface FeatureTogglesResponse {
-    data: FeatureToggle[];
+function noItemsYet(
+    onAddClick: () => void,
+) {
+    return <>
+        <p className="text-sm text-gray text-center italic">
+            No features created yet
+        </p>
+        <div className="text-center">
+            <Button onClick={onAddClick} className="inline-flex items-center">
+                <PlusIcon className="mr-2 -ml-1 w-4 h-4 text-white" />
+                <span>Add new feature</span>
+            </Button>
+        </div>
+    </>;
 }
 
 export const Dashboard: FC = () => {
+    const navigate = useNavigate();
     const { data, error, isLoading } = useSWR<FeatureTogglesResponse>('/api/features', fetcher)
 
     if (error) return <div>failed to load</div>
     if (isLoading || !data) return <div>loading...</div>
 
-    const onToggleCheck = (id: number, enabled: boolean) => async () => {
+    const features = data.data;
+
+    const onToggleCheck = (id: number) => async (enabled: boolean) => {
         await client.put(`/api/features/${id}/toggle`, {
             enabled,
         });
     }
+    const createNewFeature = () => navigate('/features/create');
 
     return <>
-        <h1 className="font-medium leading-tight text-2xl mt-0 mb-2 text-black">Features</h1>
-        {data.data.map((toggle) => (
-            <div className="mb-2 flex">
-                <div className="flex-1">
-                    <span className="font-medium">{toggle.key}</span>
-                </div>
-                <div>
-                    <label className="inline-flex relative items-center cursor-pointer">
-                        <input type="checkbox" className="sr-only peer" defaultChecked={toggle.enabled} onChange={onToggleCheck(toggle.id, !toggle.enabled)} />
-                        <div className="w-11 h-6 bg-gray-200 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600" />
-                    </label>
-                </div>
+        <div className="flex items-center mb-4">
+            <PageHeading>Features</PageHeading>
+            <div className="text-right flex-1">
+                <Button size={ButtonSize.Sm} onClick={createNewFeature} className="inline-flex items-center">
+                    <PlusIcon className="mr-2 -ml-1 w-4 h-4 text-white" />
+                    <span>Create new</span>
+                </Button>
             </div>
-        ))}
+        </div>
+        <div className="divide-y divide-gray-300/50">
+            {features.length === 0 && noItemsYet(createNewFeature)}
+            {features.map((feature) => <FeatureItem feature={feature} onToggle={onToggleCheck(feature.id)} />)}
+        </div>
     </>
 }

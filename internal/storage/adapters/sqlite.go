@@ -3,6 +3,9 @@ package adapters
 import (
 	"database/sql"
 	"fmt"
+	"github.com/golang-migrate/migrate"
+	"github.com/golang-migrate/migrate/database/sqlite3"
+	_ "github.com/golang-migrate/migrate/source/file"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/milankyncl/feature-toggles/internal/storage"
 	"os"
@@ -43,8 +46,24 @@ func NewSQLite() (error, *SQLite) {
 	if err != nil {
 		return err, nil
 	}
+
 	db, err := sql.Open("sqlite3", filepath.Join(wd, "local.sqlite"))
 	if err != nil {
+		return err, nil
+	}
+
+	driver, err := sqlite3.WithInstance(db, &sqlite3.Config{})
+	if err != nil {
+		return err, nil
+	}
+
+	m, err := migrate.NewWithDatabaseInstance("file://"+filepath.Join(wd, "migrations/"), "main", driver)
+	if err != nil {
+		return err, nil
+	}
+
+	err = m.Up()
+	if err != nil && err != migrate.ErrNoChange {
 		return err, nil
 	}
 
@@ -82,7 +101,7 @@ func (s *SQLite) Create(data storage.CreateFeatureData) error {
 }
 
 func (s *SQLite) Update(id int, data storage.UpdateFeatureData) error {
-	stmt, err := s.db.Prepare(toggleFeatureQuery)
+	stmt, err := s.db.Prepare(updateFeatureQuery)
 	defer stmt.Close()
 	if err != nil {
 		return err

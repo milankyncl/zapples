@@ -40,7 +40,7 @@ func GetFeaturesHandler(storage storage.Adapter) http.HandlerFunc {
 }
 
 type CreateFeatureRequestDto struct {
-	Key         string  `json:"name"`
+	Key         string  `json:"key"`
 	Description *string `json:"description"`
 }
 
