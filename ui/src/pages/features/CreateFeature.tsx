@@ -12,7 +12,7 @@ export const CreateFeature: FC = () => {
     const onSubmitForm = async (data: FeatureFormDto) => {
         setLoading(true);
         try {
-            await client.post('/api/features', {
+            await client.post('/features', {
                 key: data.key,
                 description: data.description,
             })

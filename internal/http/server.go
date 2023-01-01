@@ -26,27 +26,27 @@ func NewServer(storage storage.Adapter) *Server {
 func (s *Server) router() *chi.Mux {
 	r := chi.NewRouter()
 	r.Use(cors.Handler(cors.Options{
-		// AllowedOrigins:   []string{"https://foo.com"}, // Use this to allow specific origin hosts
-		AllowedOrigins: []string{"https://*", "http://*"},
-		// AllowOriginFunc:  func(r *http.Request, origin string) bool { return true },
+		AllowedOrigins:   []string{"*"},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
 		ExposedHeaders:   []string{"Link"},
 		AllowCredentials: false,
 		MaxAge:           300,
 	}))
-	r.Mount("/api", s.apiRouter())
+	r.Mount("/api/admin", s.adminApiRouter())
 	r.Mount("/", s.uiRouter())
 	return r
 }
 
-func (s *Server) apiRouter() *chi.Mux {
+func (s *Server) adminApiRouter() *chi.Mux {
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
 	r.Get("/features", handler.GetFeaturesHandler(s.storage))
 	r.Post("/features", handler.CreateFeatureHandler(s.storage))
-	r.Put("/features/{id}", handler.UpdateFeatureHandle(s.storage))
-	r.Put("/features/{id}/toggle", handler.ToggleFeatureHandle(s.storage))
+	r.Get("/features/{id}", handler.GetFeatureHandler(s.storage))
+	r.Put("/features/{id}", handler.UpdateFeatureHandler(s.storage))
+	r.Delete("/features/{id}", handler.DeleteFeatureHandler(s.storage))
+	r.Put("/features/{id}/toggle", handler.ToggleFeatureHandler(s.storage))
 	return r
 }
 

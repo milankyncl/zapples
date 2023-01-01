@@ -1,4 +1,4 @@
-import React, {FC, useState} from 'react';
+import React, {FC, useEffect} from 'react';
 import useSWR from 'swr'
 import {client} from '../api/client'
 import {Button, ButtonSize} from "../components/atoms/Button";
@@ -14,37 +14,35 @@ interface FeatureTogglesResponse {
     data: Feature[];
 }
 
-function noItemsYet(
-    onAddClick: () => void,
-) {
+function noItemsYet() {
     return <>
-        <p className="text-sm text-gray text-center italic">
+        <p className="text-sm text-gray-500 text-center italic pt-7 pb-3">
             No features created yet
         </p>
-        <div className="text-center">
-            <Button onClick={onAddClick} className="inline-flex items-center">
-                <PlusIcon className="mr-2 -ml-1 w-4 h-4 text-white" />
-                <span>Add new feature</span>
-            </Button>
-        </div>
     </>;
 }
 
 export const Dashboard: FC = () => {
     const navigate = useNavigate();
-    const { data, error, isLoading } = useSWR<FeatureTogglesResponse>('/api/features', fetcher)
+    const { data, error, isLoading, mutate } = useSWR<FeatureTogglesResponse>('/features', fetcher)
 
     if (error) return <div>failed to load</div>
     if (isLoading || !data) return <div>loading...</div>
 
-    const features = data.data;
+    const createNewFeature = () => navigate('/features/create');
 
-    const onToggleCheck = (id: number) => async (enabled: boolean) => {
-        await client.put(`/api/features/${id}/toggle`, {
+    const handleToggle = (id: number) => async (enabled: boolean) => {
+        await client.put(`/features/${id}/toggle`, {
             enabled,
         });
     }
-    const createNewFeature = () => navigate('/features/create');
+    const handleRemove = (id: number) => async () => {
+        if (window.confirm('Are you sure?')) {
+            await client.delete(`/features/${id}`);
+            await mutate();
+        }
+    }
+    const handleEdit = (id: number) => () => navigate(`/features/${id}`);
 
     return <>
         <div className="flex items-center mb-4">
@@ -57,8 +55,13 @@ export const Dashboard: FC = () => {
             </div>
         </div>
         <div className="divide-y divide-gray-300/50">
-            {features.length === 0 && noItemsYet(createNewFeature)}
-            {features.map((feature) => <FeatureItem feature={feature} onToggle={onToggleCheck(feature.id)} />)}
+            {data.data.length === 0 && noItemsYet()}
+            {data.data.map((feature) => <FeatureItem
+                feature={feature}
+                onToggle={handleToggle(feature.id)}
+                onRemove={handleRemove(feature.id)}
+                onEdit={handleEdit(feature.id)}
+            />)}
         </div>
     </>
 }

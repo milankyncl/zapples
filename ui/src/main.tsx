@@ -9,6 +9,7 @@ import './index.css';
 import {PageWrapper} from "./components/PageWrapper";
 import {Dashboard} from "./pages/Dashboard";
 import {CreateFeature} from "./pages/features/CreateFeature";
+import {EditFeature} from "./pages/features/EditFeature";
 
 const router = createHashRouter([
     {
@@ -18,6 +19,10 @@ const router = createHashRouter([
     {
         path: '/features/create',
         element: <CreateFeature />,
+    },
+    {
+        path: '/features/:id',
+        element: <EditFeature />,
     }
 ]);
 

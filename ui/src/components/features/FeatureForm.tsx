@@ -1,8 +1,10 @@
-import React, {FC} from 'react';
+import React, {FC, useEffect} from 'react';
 import {SubmitHandler, useForm} from "react-hook-form";
 import {Button, ButtonSize} from "../atoms/Button";
+import {Feature} from "../../api/models/feature";
 
 interface Props {
+    initialData?: Feature;
     loading: boolean;
     onSubmit: (_: FeatureFormDto) => void;
 }
@@ -13,10 +15,18 @@ export interface FeatureFormDto {
 }
 
 export const FeatureForm: FC<Props> = ({
+    initialData,
     onSubmit,
     loading,
 }) => {
-    const { register, handleSubmit, formState: { isValid } } = useForm<FeatureFormDto>();
+    const { register, handleSubmit, formState: { isValid }, setValue } = useForm<FeatureFormDto>();
+
+    useEffect(() => {
+        if (initialData) {
+            setValue('key', initialData.key);
+            setValue('description', initialData.description || '')
+        }
+    }, [initialData])
 
     const submitHandler: SubmitHandler<FeatureFormDto> = (data) => {
         onSubmit(data);
@@ -46,7 +56,7 @@ export const FeatureForm: FC<Props> = ({
             </div>
             <div className="text-center mt-4">
                 <Button type="submit" size={ButtonSize.Lg} disabled={!isValid || loading}>
-                    Create feature
+                    Save feature
                 </Button>
             </div>
         </form>

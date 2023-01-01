@@ -22,6 +22,11 @@ var (
 			"FROM %s",
 		featuresTable,
 	)
+	getFeatureByIdQuery = fmt.Sprintf(
+		"SELECT id, key, description, enabled, created_at "+
+			"FROM %s WHERE id = ?",
+		featuresTable,
+	)
 	insertFeatureQuery = fmt.Sprintf(
 		"INSERT INTO %s (`key`, `description`, `enabled`, `created_at`) "+
 			"VALUES (?, ?, true, CURRENT_TIMESTAMP)",
@@ -33,6 +38,10 @@ var (
 	)
 	toggleFeatureQuery = fmt.Sprintf(
 		"UPDATE %s SET enabled = ? WHERE id = ?",
+		featuresTable,
+	)
+	deleteFeatureQuery = fmt.Sprintf(
+		"DELETE FROM %s WHERE id = ?",
 		featuresTable,
 	)
 )
@@ -90,6 +99,19 @@ func (s *SQLite) GetAll() ([]storage.Feature, error) {
 	return recs, nil
 }
 
+func (s *SQLite) GetOne(id int) (storage.Feature, error) {
+	f := storage.Feature{}
+	row := s.db.QueryRow(getFeatureByIdQuery, id)
+	err := row.Scan(&f.Id, &f.Key, &f.Description, &f.Enabled, &f.CreatedAt)
+	if err == sql.ErrNoRows {
+		return f, storage.ErrFeatureNotFound
+	}
+	if err != nil {
+		return f, err
+	}
+	return f, nil
+}
+
 func (s *SQLite) Create(data storage.CreateFeatureData) error {
 	stmt, err := s.db.Prepare(insertFeatureQuery)
 	if err != nil {
@@ -118,7 +140,16 @@ func (s *SQLite) Toggle(id int, enabled bool) error {
 		return err
 	}
 	_, err = stmt.Exec(enabled, id)
+	return err
+}
 
+func (s *SQLite) Delete(id int) error {
+	stmt, err := s.db.Prepare(deleteFeatureQuery)
+	defer stmt.Close()
+	if err != nil {
+		return err
+	}
+	_, err = stmt.Exec(id)
 	return err
 }
 

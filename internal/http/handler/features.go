@@ -39,6 +39,41 @@ func GetFeaturesHandler(storage storage.Adapter) http.HandlerFunc {
 	}
 }
 
+type GetFeatureResponseDto struct {
+	Data FeatureDto `json:"data"`
+}
+
+func GetFeatureHandler(adapter storage.Adapter) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		id, err := strconv.Atoi(chi.URLParam(r, "id"))
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		feat, err := adapter.GetOne(id)
+		if err == storage.ErrFeatureNotFound {
+			http.Error(w, "Feature not found", http.StatusNotFound)
+			return
+		}
+		if err != nil {
+			http.Error(w, "Unexpected error happened", http.StatusInternalServerError)
+			return
+		}
+
+		b, err := json.Marshal(&GetFeatureResponseDto{
+			Data: featureToDto(feat),
+		})
+		if err != nil {
+			http.Error(w, "Unexpected error happened", 500)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		w.Write(b)
+	}
+}
+
 type CreateFeatureRequestDto struct {
 	Key         string  `json:"key"`
 	Description *string `json:"description"`
@@ -69,7 +104,7 @@ type UpdateFeatureRequestDto struct {
 	Description *string `json:"description"`
 }
 
-func UpdateFeatureHandle(adapter storage.Adapter) http.HandlerFunc {
+func UpdateFeatureHandler(adapter storage.Adapter) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id, err := strconv.Atoi(chi.URLParam(r, "id"))
 		if err != nil {
@@ -98,7 +133,7 @@ type ToggleFeatureRequestDto struct {
 	Enabled bool `json:"enabled"`
 }
 
-func ToggleFeatureHandle(adapter storage.Adapter) http.HandlerFunc {
+func ToggleFeatureHandler(adapter storage.Adapter) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id, err := strconv.Atoi(chi.URLParam(r, "id"))
 		if err != nil {
@@ -112,6 +147,22 @@ func ToggleFeatureHandle(adapter storage.Adapter) http.HandlerFunc {
 			return
 		}
 		err = adapter.Toggle(id, dto.Enabled)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.WriteHeader(http.StatusNoContent)
+	}
+}
+
+func DeleteFeatureHandler(adapter storage.Adapter) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		id, err := strconv.Atoi(chi.URLParam(r, "id"))
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		err = adapter.Delete(id)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return

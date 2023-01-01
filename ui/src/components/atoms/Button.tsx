@@ -28,7 +28,7 @@ interface Props {
 function getColorClass (color: ButtonColor, type: ButtonType) {
     if (color === ButtonColor.Primary) {
         if (type === 'text') {
-            return 'text-blue-500 enabled:text-blue-700';
+            return 'text-blue-500 enabled:hover:text-blue-600';
         }
         return 'bg-blue-500 enabled:hover:bg-blue-700 text-white';
     }
