@@ -30,5 +30,5 @@ func main() {
 	server := http.NewServer(uiPath, sqlite)
 
 	log.Println("Starting webserver on 0.0.0.0:3000")
-	server.ListenAndServe(3000)
+	_ = server.ListenAndServe(3000)
 }
