@@ -1,17 +1,9 @@
-name: ci
-
-on:
-  push:
+name: CI
 
 jobs:
+  lint:
+    uses: './.github/workflows/lint.yml'
+    secrets: inherit
   docker:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-      -
-        name: Build and push
-        uses: docker/build-push-action@v3
-        with:
-          push: false
-          tags: user/app:latest
+    uses: './.github/workflows/docker.yml'
+    secrets: inherit
