@@ -4,7 +4,6 @@ on: [push]
 
 jobs:
   golangci:
-    name: lint
     runs-on: ubuntu-latest
     steps:
       -
