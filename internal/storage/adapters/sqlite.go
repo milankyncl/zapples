@@ -8,8 +8,6 @@ import (
 	_ "github.com/golang-migrate/migrate/source/file"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/milankyncl/feature-toggles/internal/storage"
-	"os"
-	"path/filepath"
 )
 
 const (
@@ -50,13 +48,8 @@ type SQLite struct {
 	db *sql.DB
 }
 
-func NewSQLite() (error, *SQLite) {
-	wd, err := os.Getwd()
-	if err != nil {
-		return err, nil
-	}
-
-	db, err := sql.Open("sqlite3", filepath.Join(wd, "local.sqlite"))
+func NewSQLite(dbpath string, migrationsDir string) (error, *SQLite) {
+	db, err := sql.Open("sqlite3", dbpath)
 	if err != nil {
 		return err, nil
 	}
@@ -66,7 +59,7 @@ func NewSQLite() (error, *SQLite) {
 		return err, nil
 	}
 
-	m, err := migrate.NewWithDatabaseInstance("file://"+filepath.Join(wd, "migrations/"), "main", driver)
+	m, err := migrate.NewWithDatabaseInstance(fmt.Sprintf("file://%s", migrationsDir), "main", driver)
 	if err != nil {
 		return err, nil
 	}

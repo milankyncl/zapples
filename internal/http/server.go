@@ -8,17 +8,17 @@ import (
 	"github.com/milankyncl/feature-toggles/internal/http/handler"
 	"github.com/milankyncl/feature-toggles/internal/storage"
 	"net/http"
-	"os"
-	"path/filepath"
 	"strconv"
 )
 
 type Server struct {
+	uiPath  string
 	storage storage.Adapter
 }
 
-func NewServer(storage storage.Adapter) *Server {
+func NewServer(uiPath string, storage storage.Adapter) *Server {
 	return &Server{
+		uiPath,
 		storage,
 	}
 }
@@ -52,9 +52,8 @@ func (s *Server) adminApiRouter() *chi.Mux {
 
 func (s *Server) uiRouter() *chi.Mux {
 	r := chi.NewRouter()
-	wd, _ := os.Getwd()
 
-	fs := http.FileServer(http.Dir(filepath.Join(wd, "/ui/dist")))
+	fs := http.FileServer(http.Dir(s.uiPath))
 	r.Handle("/ui/*", http.StripPrefix("/ui", fs))
 
 	r.HandleFunc("/", func(w http.ResponseWriter, req *http.Request) {
