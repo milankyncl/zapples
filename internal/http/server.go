@@ -8,6 +8,7 @@ import (
 	"github.com/milankyncl/feature-toggles/internal/http/handler"
 	"github.com/milankyncl/feature-toggles/internal/storage"
 	"net/http"
+	"path/filepath"
 	"strconv"
 )
 
@@ -16,7 +17,8 @@ type Server struct {
 	storage storage.Adapter
 }
 
-func NewServer(uiPath string, storage storage.Adapter) *Server {
+func NewServer(basePath string, storage storage.Adapter) *Server {
+	uiPath := filepath.Join(basePath, "ui/dist")
 	return &Server{
 		uiPath,
 		storage,

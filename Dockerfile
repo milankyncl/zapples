@@ -28,19 +28,15 @@ RUN go build -o /build -ldflags='-w -extldflags "-static"' main.go
 
 FROM alpine:3.17
 
-ENV ZAPPLES_PATH="/usr/share/zapples"
+ENV ZAPPLES_BASE_PATH="/usr/share/zapples"
 
-RUN mkdir -p $ZAPPLES_PATH && chown 499:499 -R $ZAPPLES_PATH
+RUN mkdir -p $ZAPPLES_BASE_PATH && chown 499:499 -R $ZAPPLES_BASE_PATH
 
 USER 499:499
 
-ENV ZAPPLES_DB_PATH="$ZAPPLES_PATH/local.sqlite"
-ENV ZAPPLES_MIGRATIONS_PATH="$ZAPPLES_PATH/migrations"
-ENV ZAPPLES_UI_PATH="$ZAPPLES_PATH/ui"
+COPY migrations/ "${ZAPPLES_BASE_PATH}/migrations"
 
-COPY migrations/ $ZAPPLES_MIGRATIONS_PATH
-
-COPY --from=ui-builder /src/dist/ $ZAPPLES_UI_PATH
+COPY --from=ui-builder /src/dist/ "${ZAPPLES_BASE_PATH}/ui/dist"
 COPY --from=api-builder /build /usr/local/bin/zapples
 
 ENTRYPOINT ["/usr/local/bin/zapples"]

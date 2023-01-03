@@ -7,27 +7,26 @@ import (
 	"os"
 )
 
+var basePath string
+
 func main() {
-	dbpath := os.Getenv("ZAPPLES_DB_PATH")
-	if dbpath == "" {
-		log.Fatal("dbpath is not defined")
-	}
-	migrationsPath := os.Getenv("ZAPPLES_MIGRATIONS_PATH")
-	if dbpath == "" {
-		log.Fatal("migrationsPath is not defined")
-	}
-	uiPath := os.Getenv("ZAPPLES_UI_PATH")
-	if dbpath == "" {
-		log.Fatal("migrationsDir is not defined")
+	basePath = os.Getenv("ZAPPLES_BASE_PATH")
+	if basePath == "" {
+		log.Println("zapples base path is not defined, using working directory")
+		wd, err := os.Getwd()
+		if err != nil {
+			log.Fatal("could not get current working directory")
+		}
+		basePath = wd
 	}
 
-	err, sqlite := adapters.NewSQLite(dbpath, migrationsPath)
+	err, sqlite := adapters.NewSQLite(basePath)
 	if err != nil {
 		panic(err)
 	}
 	defer sqlite.Close()
 
-	server := http.NewServer(uiPath, sqlite)
+	server := http.NewServer(basePath, sqlite)
 
 	log.Println("Starting webserver on 0.0.0.0:3000")
 	_ = server.ListenAndServe(3000)
