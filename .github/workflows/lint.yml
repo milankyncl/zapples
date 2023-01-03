@@ -23,3 +23,5 @@ jobs:
         with:
           version: v1.50.1
           skip-go-installation: true
+          args: "--out-${NO_FUTURE}format colored-line-number"
+
