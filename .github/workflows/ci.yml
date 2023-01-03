@@ -1,9 +1,0 @@
-name: CI
-
-jobs:
-  lint:
-    uses: './.github/workflows/lint.yml'
-    secrets: inherit
-  docker:
-    uses: './.github/workflows/docker.yml'
-    secrets: inherit
