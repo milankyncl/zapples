@@ -77,10 +77,10 @@ func NewSQLite(dbpath string, migrationsDir string) (error, *SQLite) {
 func (s *SQLite) GetAll() ([]storage.Feature, error) {
 	recs := make([]storage.Feature, 0)
 	rows, err := s.db.Query(getFeaturesQuery)
-	defer rows.Close()
 	if err != nil {
 		return recs, err
 	}
+	defer rows.Close()
 	for rows.Next() {
 		f := storage.Feature{}
 		err = rows.Scan(&f.Id, &f.Key, &f.Description, &f.Enabled, &f.CreatedAt)
@@ -117,10 +117,10 @@ func (s *SQLite) Create(data storage.CreateFeatureData) error {
 
 func (s *SQLite) Update(id int, data storage.UpdateFeatureData) error {
 	stmt, err := s.db.Prepare(updateFeatureQuery)
-	defer stmt.Close()
 	if err != nil {
 		return err
 	}
+	defer stmt.Close()
 	_, err = stmt.Exec(data.Key, data.Description, id)
 
 	return err
@@ -128,20 +128,20 @@ func (s *SQLite) Update(id int, data storage.UpdateFeatureData) error {
 
 func (s *SQLite) Toggle(id int, enabled bool) error {
 	stmt, err := s.db.Prepare(toggleFeatureQuery)
-	defer stmt.Close()
 	if err != nil {
 		return err
 	}
+	defer stmt.Close()
 	_, err = stmt.Exec(enabled, id)
 	return err
 }
 
 func (s *SQLite) Delete(id int) error {
 	stmt, err := s.db.Prepare(deleteFeatureQuery)
-	defer stmt.Close()
 	if err != nil {
 		return err
 	}
+	defer stmt.Close()
 	_, err = stmt.Exec(id)
 	return err
 }
