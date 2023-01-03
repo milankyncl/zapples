@@ -8,7 +8,6 @@ import (
 	_ "github.com/golang-migrate/migrate/source/file"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/milankyncl/feature-toggles/internal/storage"
-	"os"
 	"path/filepath"
 )
 
@@ -50,13 +49,8 @@ type SQLite struct {
 	db *sql.DB
 }
 
-func NewSQLite() (error, *SQLite) {
-	wd, err := os.Getwd()
-	if err != nil {
-		return err, nil
-	}
-
-	db, err := sql.Open("sqlite3", filepath.Join(wd, "local.sqlite"))
+func NewSQLite(basePath string) (error, *SQLite) {
+	db, err := sql.Open("sqlite3", filepath.Join(basePath, "db.sqlite"))
 	if err != nil {
 		return err, nil
 	}
@@ -66,7 +60,7 @@ func NewSQLite() (error, *SQLite) {
 		return err, nil
 	}
 
-	m, err := migrate.NewWithDatabaseInstance("file://"+filepath.Join(wd, "migrations/"), "main", driver)
+	m, err := migrate.NewWithDatabaseInstance(fmt.Sprintf("file://%s", filepath.Join(basePath, "migrations/")), "main", driver)
 	if err != nil {
 		return err, nil
 	}
@@ -84,10 +78,10 @@ func NewSQLite() (error, *SQLite) {
 func (s *SQLite) GetAll() ([]storage.Feature, error) {
 	recs := make([]storage.Feature, 0)
 	rows, err := s.db.Query(getFeaturesQuery)
-	defer rows.Close()
 	if err != nil {
 		return recs, err
 	}
+	defer rows.Close()
 	for rows.Next() {
 		f := storage.Feature{}
 		err = rows.Scan(&f.Id, &f.Key, &f.Description, &f.Enabled, &f.CreatedAt)
@@ -124,10 +118,10 @@ func (s *SQLite) Create(data storage.CreateFeatureData) error {
 
 func (s *SQLite) Update(id int, data storage.UpdateFeatureData) error {
 	stmt, err := s.db.Prepare(updateFeatureQuery)
-	defer stmt.Close()
 	if err != nil {
 		return err
 	}
+	defer stmt.Close()
 	_, err = stmt.Exec(data.Key, data.Description, id)
 
 	return err
@@ -135,20 +129,20 @@ func (s *SQLite) Update(id int, data storage.UpdateFeatureData) error {
 
 func (s *SQLite) Toggle(id int, enabled bool) error {
 	stmt, err := s.db.Prepare(toggleFeatureQuery)
-	defer stmt.Close()
 	if err != nil {
 		return err
 	}
+	defer stmt.Close()
 	_, err = stmt.Exec(enabled, id)
 	return err
 }
 
 func (s *SQLite) Delete(id int) error {
 	stmt, err := s.db.Prepare(deleteFeatureQuery)
-	defer stmt.Close()
 	if err != nil {
 		return err
 	}
+	defer stmt.Close()
 	_, err = stmt.Exec(id)
 	return err
 }

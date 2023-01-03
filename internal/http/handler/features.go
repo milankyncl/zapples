@@ -35,7 +35,7 @@ func GetFeaturesHandler(storage storage.Adapter) http.HandlerFunc {
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		w.Write(b)
+		_, _ = w.Write(b)
 	}
 }
 
@@ -70,7 +70,7 @@ func GetFeatureHandler(adapter storage.Adapter) http.HandlerFunc {
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		w.Write(b)
+		_, _ = w.Write(b)
 	}
 }
 
