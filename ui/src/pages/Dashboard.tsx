@@ -16,7 +16,7 @@ interface FeatureTogglesResponse {
 
 function noItemsYet() {
     return <>
-        <p className="text-sm text-gray-500 text-center italic pt-7 pb-3">
+        <p className="text-sm text-gray-500 text-center italic py-6">
             No features created yet
         </p>
     </>;

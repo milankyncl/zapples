@@ -51,7 +51,7 @@ function getSizeClass(size: ButtonSize, type: ButtonType) {
         if (type === 'text') {
             return 'text-sm font-medium py-1 px-1';
         }
-        return 'text-sm font-medium py-1 px-3';
+        return 'text-sm font-medium py-1.5 px-3';
     }
     if (size === ButtonSize.Md) {
         return 'text-md font-medium py-1 px-4';
