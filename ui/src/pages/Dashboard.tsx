@@ -1,4 +1,4 @@
-import React, {FC, useEffect} from 'react';
+import React, {FC} from 'react';
 import useSWR from 'swr'
 import {client} from '../api/client'
 import {Button, ButtonSize} from "../components/atoms/Button";
@@ -7,6 +7,8 @@ import {useNavigate} from "react-router-dom";
 import {PageHeading} from "../components/atoms/PageHeading";
 import {FeatureItem} from "./features/FeatureItem";
 import {Feature} from "../api/models/feature";
+import {ErrorMessage} from "../components/atoms/ErrorMessage";
+import {LoadingMessage} from "../components/atoms/LoadingMessage";
 
 const fetcher = (url: string) => client.get(url).then(res => res.data)
 
@@ -16,7 +18,7 @@ interface FeatureTogglesResponse {
 
 function noItemsYet() {
     return <>
-        <p className="text-sm text-gray-500 text-center italic pt-7 pb-3">
+        <p className="text-sm text-gray-500 text-center italic py-6">
             No features created yet
         </p>
     </>;
@@ -24,10 +26,14 @@ function noItemsYet() {
 
 export const Dashboard: FC = () => {
     const navigate = useNavigate();
-    const { data, error, isLoading, mutate } = useSWR<FeatureTogglesResponse>('/features', fetcher)
+    const { data, error, isLoading, mutate } = useSWR<FeatureTogglesResponse>('/features', fetcher);
 
-    if (error) return <div>failed to load</div>
-    if (isLoading || !data) return <div>loading...</div>
+    if (error) {
+        return <ErrorMessage>Failed to load features</ErrorMessage>
+    }
+    if (isLoading || !data) {
+        return <LoadingMessage />
+    }
 
     const createNewFeature = () => navigate('/features/create');
 

@@ -1,5 +1,5 @@
 import React, {FC, useEffect} from 'react';
-import {SubmitHandler, useForm} from "react-hook-form";
+import {useForm} from "react-hook-form";
 import {Button, ButtonSize} from "../atoms/Button";
 import {Feature} from "../../api/models/feature";
 
@@ -13,6 +13,11 @@ export interface FeatureFormDto {
     key: string;
     description: string;
 }
+
+function validateFeatureKey(str: string) {
+    return !/[`!@#$%^&*()+=\[\]{};':"\\|,.<>\/?~]/.test(str);
+}
+
 
 export const FeatureForm: FC<Props> = ({
     initialData,
@@ -28,19 +33,15 @@ export const FeatureForm: FC<Props> = ({
         }
     }, [initialData])
 
-    const submitHandler: SubmitHandler<FeatureFormDto> = (data) => {
-        onSubmit(data);
-    };
-
     return (
-        <form onSubmit={handleSubmit(submitHandler)}>
+        <form onSubmit={handleSubmit(onSubmit)}>
             <div className="mb-4">
                 <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="key">
                     Feature key
                 </label>
                 <input
                     type="text"
-                    {...register('key')}
+                    {...register('key', { required: true, validate: validateFeatureKey })}
                     className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                 />
             </div>
