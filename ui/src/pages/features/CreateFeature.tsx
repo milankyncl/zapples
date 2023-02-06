@@ -4,6 +4,7 @@ import {BackButton} from "../../components/atoms/BackButton";
 import {PageHeading} from "../../components/atoms/PageHeading";
 import {FeatureForm, FeatureFormDto} from "../../components/features/FeatureForm";
 import {client} from "../../api/client";
+import moment from "moment";
 
 export const CreateFeature: FC = () => {
     const navigate = useNavigate();
@@ -15,6 +16,8 @@ export const CreateFeature: FC = () => {
             await client.post('/features', {
                 key: data.key,
                 description: data.description,
+                enabledSince: data.enabledSince ? moment(data.enabledSince).toISOString() : null,
+                enabledUntil: data.enabledUntil ? moment(data.enabledUntil).toISOString() : null,
             })
         } catch (e) {
             console.error(e, 'Error happened while creating features')

@@ -3,5 +3,7 @@ export interface Feature {
     key: string;
     description: string | null;
     enabled: boolean;
-    createdAt: Date;
+    enabledSince: string | null;
+    enabledUntil: string | null;
+    createdAt: string;
 }

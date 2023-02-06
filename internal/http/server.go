@@ -36,6 +36,7 @@ func (s *Server) router() *chi.Mux {
 		MaxAge:           300,
 	}))
 	r.Mount("/api/admin", s.adminApiRouter())
+	r.Get("/api/feature-toggles", handler.GetFeatureTogglesHandler(s.storage))
 	r.Mount("/", s.uiRouter())
 	return r
 }

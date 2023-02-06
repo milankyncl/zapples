@@ -108,10 +108,10 @@ paths:
       security:
         - api_key: []
   /api/feature-toggles:
-    get:
+    put:
       tags:
-        - Feature storage
-      summary: Get feature storage
+        - Feature toggles
+      summary: Get feature toggles
       operationId: getFeatureToggles
       responses:
         '200':
@@ -165,12 +165,12 @@ components:
         key:
           type: string
           example: feature_key
-        enabled:
+        toggled:
           type: boolean
           example: false
       required:
         - key
-        - enabled
+        - toggled
   securitySchemes:
     api_key:
       type: apiKey

@@ -1,4 +1,4 @@
-import React, {FC, useEffect, useState} from 'react';
+import React, {FC, useState} from 'react';
 import {useNavigate, useParams} from "react-router-dom";
 import {BackButton} from "../../components/atoms/BackButton";
 import {PageHeading} from "../../components/atoms/PageHeading";
@@ -6,6 +6,7 @@ import {FeatureForm, FeatureFormDto} from "../../components/features/FeatureForm
 import {client} from "../../api/client";
 import useSWRImmutable from "swr/immutable";
 import {Feature} from "../../api/models/feature";
+import moment from "moment/moment";
 
 const fetcher = (url: string) => client.get(url).then(res => res.data)
 
@@ -16,17 +17,12 @@ interface FeatureResponse {
 export const EditFeature: FC = () => {
     const navigate = useNavigate();
     const params = useParams();
-    const { data, error, isLoading, mutate } = useSWRImmutable<FeatureResponse>(`/features/${params.id}`, fetcher, {
+    const { data, error, isLoading } = useSWRImmutable<FeatureResponse>(`/features/${params.id}`, fetcher, {
         revalidateOnMount: true,
         revalidateOnFocus: true,
         keepPreviousData: false,
     })
     const [loading, setLoading] = useState(false);
-
-    useEffect(() => {
-        mutate()
-        console.log('x');
-    }, [params.id]);
 
     const onSubmitForm = (id: number) => async (data: FeatureFormDto) => {
         setLoading(true);
@@ -34,6 +30,8 @@ export const EditFeature: FC = () => {
             await client.put(`/features/${id}`, {
                 key: data.key,
                 description: data.description,
+                enabledSince: data.enabledSince ? moment(data.enabledSince).toISOString() : null,
+                enabledUntil: data.enabledUntil ? moment(data.enabledUntil).toISOString() : null,
             })
         } catch (e) {
             console.error(e, 'Error happened while updating feature')

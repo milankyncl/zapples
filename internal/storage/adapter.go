@@ -1,15 +1,22 @@
 package storage
 
-import "errors"
+import (
+	"errors"
+	"time"
+)
 
 type CreateFeatureData struct {
-	Key         string
-	Description *string
+	Key          string
+	Description  *string
+	EnabledSince *time.Time
+	EnabledUntil *time.Time
 }
 
 type UpdateFeatureData struct {
-	Key         string
-	Description *string
+	Key          string
+	Description  *string
+	EnabledSince *time.Time
+	EnabledUntil *time.Time
 }
 
 var (
