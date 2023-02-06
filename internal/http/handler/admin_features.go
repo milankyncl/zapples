@@ -4,8 +4,10 @@ import (
 	"encoding/json"
 	"github.com/go-chi/chi/v5"
 	"github.com/milankyncl/feature-toggles/internal/storage"
+	"log"
 	"net/http"
 	"strconv"
+	"time"
 )
 
 type GetFeaturesResponseDto struct {
@@ -16,6 +18,7 @@ func GetFeaturesHandler(storage storage.Adapter) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		features, err := storage.GetAll()
 		if err != nil {
+			log.Println(err)
 			http.Error(w, "Unexpected error happened", http.StatusInternalServerError)
 			return
 		}
@@ -29,6 +32,7 @@ func GetFeaturesHandler(storage storage.Adapter) http.HandlerFunc {
 			Data: dtos,
 		})
 		if err != nil {
+			log.Println(err)
 			http.Error(w, "Unexpected error happened", 500)
 			return
 		}
@@ -74,22 +78,33 @@ func GetFeatureHandler(adapter storage.Adapter) http.HandlerFunc {
 	}
 }
 
-type CreateFeatureRequestDto struct {
-	Key         string  `json:"key"`
-	Description *string `json:"description"`
+type ManageFeatureRequestDto struct {
+	Key          string  `json:"key"`
+	Description  *string `json:"description"`
+	EnabledSince *string `json:"enabledSince"`
+	EnabledUntil *string `json:"enabledUntil"`
 }
 
 func CreateFeatureHandler(adapter storage.Adapter) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var dto CreateFeatureRequestDto
+		var dto ManageFeatureRequestDto
 		err := json.NewDecoder(r.Body).Decode(&dto)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
+
+		since, until, err := parseFeatureEnableDates(dto)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
 		err = adapter.Create(storage.CreateFeatureData{
-			Key:         dto.Key,
-			Description: dto.Description,
+			Key:          dto.Key,
+			Description:  dto.Description,
+			EnabledSince: since,
+			EnabledUntil: until,
 		})
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -99,11 +114,6 @@ func CreateFeatureHandler(adapter storage.Adapter) http.HandlerFunc {
 	}
 }
 
-type UpdateFeatureRequestDto struct {
-	Key         string  `json:"key"`
-	Description *string `json:"description"`
-}
-
 func UpdateFeatureHandler(adapter storage.Adapter) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id, err := strconv.Atoi(chi.URLParam(r, "id"))
@@ -111,15 +121,24 @@ func UpdateFeatureHandler(adapter storage.Adapter) http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		var dto UpdateFeatureRequestDto
+		var dto ManageFeatureRequestDto
 		err = json.NewDecoder(r.Body).Decode(&dto)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
+
+		since, until, err := parseFeatureEnableDates(dto)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
 		err = adapter.Update(id, storage.UpdateFeatureData{
-			Key:         dto.Key,
-			Description: dto.Description,
+			Key:          dto.Key,
+			Description:  dto.Description,
+			EnabledSince: since,
+			EnabledUntil: until,
 		})
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -169,4 +188,24 @@ func DeleteFeatureHandler(adapter storage.Adapter) http.HandlerFunc {
 		}
 		w.WriteHeader(http.StatusNoContent)
 	}
+}
+
+func parseFeatureEnableDates(dto ManageFeatureRequestDto) (*time.Time, *time.Time, error) {
+	var enabledSince *time.Time
+	if dto.EnabledSince != nil {
+		parsedEnabledSince, err := time.Parse(time.RFC3339Nano, *dto.EnabledSince)
+		if err != nil {
+			return nil, nil, err
+		}
+		enabledSince = &parsedEnabledSince
+	}
+	var enabledUntil *time.Time
+	if dto.EnabledUntil != nil {
+		parsedEnabledUntil, err := time.Parse(time.RFC3339Nano, *dto.EnabledUntil)
+		if err != nil {
+			return nil, nil, err
+		}
+		enabledUntil = &parsedEnabledUntil
+	}
+	return enabledSince, enabledUntil, nil
 }

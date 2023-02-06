@@ -17,22 +17,22 @@ const (
 
 var (
 	getFeaturesQuery = fmt.Sprintf(
-		"SELECT id, key, description, enabled, created_at "+
+		"SELECT id, key, description, enabled, enabled_since, enabled_until, created_at "+
 			"FROM %s",
 		featuresTable,
 	)
 	getFeatureByIdQuery = fmt.Sprintf(
-		"SELECT id, key, description, enabled, created_at "+
+		"SELECT id, key, description, enabled, enabled_since, enabled_until, created_at "+
 			"FROM %s WHERE id = ?",
 		featuresTable,
 	)
 	insertFeatureQuery = fmt.Sprintf(
-		"INSERT INTO %s (`key`, `description`, `enabled`, `created_at`) "+
-			"VALUES (?, ?, true, CURRENT_TIMESTAMP)",
+		"INSERT INTO %s (`key`, `description`, `enabled`, `enabled_since`, `enabled_until`, `created_at`) "+
+			"VALUES (?, ?, true, ?, ?, CURRENT_TIMESTAMP)",
 		featuresTable,
 	)
 	updateFeatureQuery = fmt.Sprintf(
-		"UPDATE %s SET key = ?, description = ? WHERE id = ?",
+		"UPDATE %s SET key = ?, description = ?, enabled_since = ?, enabled_until = ? WHERE id = ?",
 		featuresTable,
 	)
 	toggleFeatureQuery = fmt.Sprintf(
@@ -84,7 +84,7 @@ func (s *SQLite) GetAll() ([]storage.Feature, error) {
 	defer rows.Close()
 	for rows.Next() {
 		f := storage.Feature{}
-		err = rows.Scan(&f.Id, &f.Key, &f.Description, &f.Enabled, &f.CreatedAt)
+		err = rows.Scan(&f.Id, &f.Key, &f.Description, &f.Enabled, &f.EnabledSince, &f.EnabledUntil, &f.CreatedAt)
 		if err != nil {
 			return recs, err
 		}
@@ -96,7 +96,7 @@ func (s *SQLite) GetAll() ([]storage.Feature, error) {
 func (s *SQLite) GetOne(id int) (storage.Feature, error) {
 	f := storage.Feature{}
 	row := s.db.QueryRow(getFeatureByIdQuery, id)
-	err := row.Scan(&f.Id, &f.Key, &f.Description, &f.Enabled, &f.CreatedAt)
+	err := row.Scan(&f.Id, &f.Key, &f.Description, &f.Enabled, &f.EnabledUntil, &f.EnabledSince, &f.CreatedAt)
 	if err == sql.ErrNoRows {
 		return f, storage.ErrFeatureNotFound
 	}
@@ -111,8 +111,8 @@ func (s *SQLite) Create(data storage.CreateFeatureData) error {
 	if err != nil {
 		return err
 	}
-	_, err = stmt.Exec(data.Key, data.Description)
 
+	_, err = stmt.Exec(data.Key, data.Description, data.EnabledSince, data.EnabledUntil)
 	return err
 }
 
@@ -122,8 +122,8 @@ func (s *SQLite) Update(id int, data storage.UpdateFeatureData) error {
 		return err
 	}
 	defer stmt.Close()
-	_, err = stmt.Exec(data.Key, data.Description, id)
 
+	_, err = stmt.Exec(data.Key, data.Description, data.EnabledUntil, data.EnabledSince, id)
 	return err
 }
 

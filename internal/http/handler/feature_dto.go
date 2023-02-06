@@ -10,9 +10,9 @@ type FeatureDto struct {
 	Key          string  `json:"key"`
 	Description  *string `json:"description"`
 	Enabled      bool    `json:"enabled"`
-	EnabledSince *string `json:"enabled_since"`
-	EnabledUntil *string `json:"enabled_until"`
-	CreatedAt    string  `json:"created_at"`
+	EnabledSince *string `json:"enabledSince"`
+	EnabledUntil *string `json:"enabledUntil"`
+	CreatedAt    string  `json:"createdAt"`
 }
 
 func featureToDto(f storage.Feature) FeatureDto {
@@ -33,6 +33,6 @@ func featureToDto(f storage.Feature) FeatureDto {
 		Enabled:      f.Enabled,
 		EnabledSince: enabledSinceStr,
 		EnabledUntil: enabledUntilStr,
-		CreatedAt:    f.CreatedAt.Format(time.RFC3339),
+		CreatedAt:    f.CreatedAt.Format(time.RFC3339Nano),
 	}
 }
